@@ -1,0 +1,37 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  safelist: [
+    'text-red-600',
+    'text-red-700',
+    'text-red-800',
+    'text-green-600',
+    'text-green-700',
+    'text-green-800',
+    'text-orange-600',
+    'text-blue-600',
+    'text-blue-700',
+    'text-gray-700',
+    'text-gray-800',
+    'bg-red-100',
+    'bg-red-500',
+    'bg-green-100',
+    'bg-green-500',
+    'bg-blue-100',
+    'bg-blue-500',
+    'bg-purple-500',
+    'bg-yellow-500',
+    'bg-orange-500',
+    'bg-gray-100',
+    'border-red-400',
+    'border-green-400',
+    'border-gray-300',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
