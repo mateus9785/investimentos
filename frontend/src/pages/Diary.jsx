@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { formatDate, getCurrentMonthYear } from '../hooks/useApi';
@@ -7,7 +7,15 @@ export default function Diary() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(getCurrentMonthYear());
+  const [lightboxSrc, setLightboxSrc] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!lightboxSrc) return;
+    const handleKey = (e) => { if (e.key === 'Escape') setLightboxSrc(null); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [lightboxSrc]);
 
   useEffect(() => {
     loadEntries();
@@ -107,7 +115,9 @@ export default function Diary() {
                 <img
                   src={`http://localhost:3001${entry.image_path}`}
                   alt={entry.title}
-                  className="w-full h-40 object-cover"
+                  className="w-full h-40 object-cover cursor-zoom-in"
+                  onClick={() => setLightboxSrc(`http://localhost:3001${entry.image_path}`)}
+                  title="Clique para ampliar"
                 />
               )}
               <div className="p-4">
@@ -136,6 +146,25 @@ export default function Diary() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 cursor-zoom-out"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <img
+            src={lightboxSrc}
+            alt="Imagem em tela cheia"
+            className="max-w-full max-h-full object-contain select-none"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            className="absolute top-4 right-4 text-white text-3xl leading-none hover:text-gray-300"
+            onClick={() => setLightboxSrc(null)}
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>

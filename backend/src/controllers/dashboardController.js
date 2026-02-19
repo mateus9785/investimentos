@@ -47,9 +47,9 @@ const dashboardController = {
         [req.userId, m, y]
       );
 
-      // Get all international trades for the month grouped by date
+      // Get all international trades for the month grouped by date (in USD)
       const [intRows] = await db.query(
-        `SELECT DATE(trade_date) as date, SUM(pnl_brl) as total_pnl
+        `SELECT DATE(trade_date) as date, SUM(pnl_usd) as total_pnl
          FROM international_trades
          WHERE user_id = ? AND MONTH(trade_date) = ? AND YEAR(trade_date) = ?
          GROUP BY date ORDER BY date`,
@@ -64,7 +64,7 @@ const dashboardController = {
       }
       for (const row of intRows) {
         const key = row.date instanceof Date ? row.date.toISOString().split('T')[0] : String(row.date);
-        merged[key] = (merged[key] || 0) + parseFloat(row.total_pnl);
+        merged[key] = (merged[key] || 0) + parseFloat(row.total_pnl) * exchangeRate;
       }
 
       const sortedDates = Object.keys(merged).sort();

@@ -4,7 +4,7 @@ const goalController = {
   async index(req, res) {
     try {
       const goal = await Goal.findByUser(req.userId);
-      return res.json(goal || { total_balance: 0, monthly_profit: 0 });
+      return res.json(goal || { total_balance: 0, monthly_profit: 0, broker_balance: 0, broker_international_balance: 0 });
     } catch (error) {
       console.error('Erro ao buscar objetivo:', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
@@ -13,11 +13,13 @@ const goalController = {
 
   async store(req, res) {
     try {
-      const { total_balance, monthly_profit } = req.body;
+      const { total_balance, monthly_profit, broker_balance, broker_international_balance } = req.body;
 
       const id = await Goal.upsert(req.userId, {
         total_balance: total_balance || 0,
-        monthly_profit: monthly_profit || 0
+        monthly_profit: monthly_profit || 0,
+        broker_balance: broker_balance || 0,
+        broker_international_balance: broker_international_balance || 0
       });
 
       const goal = await Goal.findById(id, req.userId) || await Goal.findByUser(req.userId);
@@ -30,7 +32,7 @@ const goalController = {
 
   async update(req, res) {
     try {
-      const { total_balance, monthly_profit } = req.body;
+      const { total_balance, monthly_profit, broker_balance, broker_international_balance } = req.body;
 
       const goal = await Goal.findById(req.params.id, req.userId);
 
@@ -40,7 +42,9 @@ const goalController = {
 
       await Goal.update(req.params.id, req.userId, {
         total_balance: total_balance ?? goal.total_balance,
-        monthly_profit: monthly_profit ?? goal.monthly_profit
+        monthly_profit: monthly_profit ?? goal.monthly_profit,
+        broker_balance: broker_balance ?? goal.broker_balance,
+        broker_international_balance: broker_international_balance ?? goal.broker_international_balance
       });
 
       const updatedGoal = await Goal.findById(req.params.id, req.userId);

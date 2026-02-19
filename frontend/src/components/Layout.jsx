@@ -8,7 +8,7 @@ const menuItems = [
   { path: '/trades-internacionais', label: 'Trades Int.', icon: '🌎' },
   { path: '/diario', label: 'Diário', icon: '📝' },
   { path: '/calendario', label: 'Calendário', icon: '📅' },
-  { path: '/configuracoes', label: 'Configurações', icon: '⚙️' },
+
 ];
 
 export default function Layout() {
@@ -23,11 +23,11 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-64 bg-gray-900 text-white">
+      <aside className="fixed inset-y-0 left-0 w-64 bg-gray-900 text-white flex flex-col">
         <div className="p-6">
           <h1 className="text-xl font-bold">Finanças</h1>
         </div>
-        <nav className="mt-6">
+        <nav className="mt-6 flex-1">
           {menuItems.map(item => (
             <NavLink
               key={item.path}
@@ -44,25 +44,19 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+        <div className="p-6 border-t border-gray-700">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-sm w-full transition-colors"
+          >
+            <span>🚪</span>
+            Sair
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
       <div className="ml-64">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="flex items-center justify-between px-8 py-4">
-            <h2 className="text-lg font-semibold text-gray-700">
-              Olá, {user?.username}
-            </h2>
-            <button
-              onClick={handleLogout}
-              className="text-gray-500 hover:text-gray-700 text-sm"
-            >
-              Sair
-            </button>
-          </div>
-        </header>
-
         {/* Page content */}
         <main className="p-8">
           <Outlet />

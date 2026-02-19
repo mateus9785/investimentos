@@ -38,19 +38,19 @@ const Expense = {
   },
 
   async create(userId, data) {
-    const { category_id, amount, description, expense_date } = data;
+    const { category_id, amount, description, expense_date, is_mandatory } = data;
     const [result] = await db.query(
-      'INSERT INTO expenses (user_id, category_id, amount, description, expense_date) VALUES (?, ?, ?, ?, ?)',
-      [userId, category_id, amount, description, expense_date]
+      'INSERT INTO expenses (user_id, category_id, amount, description, expense_date, is_mandatory) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, category_id, amount, description, expense_date, is_mandatory ? 1 : 0]
     );
     return result.insertId;
   },
 
   async update(id, userId, data) {
-    const { category_id, amount, description, expense_date } = data;
+    const { category_id, amount, description, expense_date, is_mandatory } = data;
     const [result] = await db.query(
-      'UPDATE expenses SET category_id = ?, amount = ?, description = ?, expense_date = ? WHERE id = ? AND user_id = ?',
-      [category_id, amount, description, expense_date, id, userId]
+      'UPDATE expenses SET category_id = ?, amount = ?, description = ?, expense_date = ?, is_mandatory = ? WHERE id = ? AND user_id = ?',
+      [category_id, amount, description, expense_date, is_mandatory ? 1 : 0, id, userId]
     );
     return result.affectedRows > 0;
   },

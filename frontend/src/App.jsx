@@ -9,7 +9,6 @@ import Calendar from './pages/Calendar';
 import Diary from './pages/Diary';
 import DiaryEditor from './pages/DiaryEditor';
 import InternationalTrades from './pages/InternationalTrades';
-import Settings from './pages/Settings';
 
 function PrivateRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -42,7 +41,7 @@ function App() {
         <Route path="trades" element={<Trades />} />
         <Route path="trades-internacionais" element={<InternationalTrades />} />
         <Route path="calendario" element={<Calendar />} />
-        <Route path="configuracoes" element={<Settings />} />
+
         <Route path="diario" element={<Diary />} />
         <Route path="diario/novo" element={<DiaryEditor />} />
         <Route path="diario/:id" element={<DiaryEditor />} />

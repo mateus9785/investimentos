@@ -18,19 +18,19 @@ const Goal = {
   },
 
   async create(userId, data) {
-    const { total_balance, monthly_profit } = data;
+    const { total_balance, monthly_profit, broker_balance, broker_international_balance } = data;
     const [result] = await db.query(
-      'INSERT INTO goals (user_id, total_balance, monthly_profit) VALUES (?, ?, ?)',
-      [userId, total_balance || 0, monthly_profit || 0]
+      'INSERT INTO goals (user_id, total_balance, monthly_profit, broker_balance, broker_international_balance) VALUES (?, ?, ?, ?, ?)',
+      [userId, total_balance || 0, monthly_profit || 0, broker_balance || 0, broker_international_balance || 0]
     );
     return result.insertId;
   },
 
   async update(id, userId, data) {
-    const { total_balance, monthly_profit } = data;
+    const { total_balance, monthly_profit, broker_balance, broker_international_balance } = data;
     const [result] = await db.query(
-      'UPDATE goals SET total_balance = ?, monthly_profit = ? WHERE id = ? AND user_id = ?',
-      [total_balance, monthly_profit, id, userId]
+      'UPDATE goals SET total_balance = ?, monthly_profit = ?, broker_balance = ?, broker_international_balance = ? WHERE id = ? AND user_id = ?',
+      [total_balance, monthly_profit, broker_balance, broker_international_balance, id, userId]
     );
     return result.affectedRows > 0;
   },

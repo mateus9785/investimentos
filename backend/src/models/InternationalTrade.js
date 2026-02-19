@@ -52,7 +52,7 @@ const InternationalTrade = {
 
   async sumByUser(userId, month, year) {
     const [rows] = await db.query(
-      `SELECT COALESCE(SUM(pnl_brl), 0) as total
+      `SELECT COALESCE(SUM(pnl_usd), 0) as total
        FROM international_trades
        WHERE user_id = ? AND MONTH(trade_date) = ? AND YEAR(trade_date) = ?`,
       [userId, month, year]
@@ -72,7 +72,7 @@ const InternationalTrade = {
 
   async getCalendar(userId, month, year) {
     const [rows] = await db.query(
-      `SELECT DATE(trade_date) as date, SUM(pnl_brl) as total_pnl
+      `SELECT DATE(trade_date) as date, SUM(pnl_usd) as total_pnl
        FROM international_trades
        WHERE user_id = ? AND MONTH(trade_date) = ? AND YEAR(trade_date) = ?
        GROUP BY date

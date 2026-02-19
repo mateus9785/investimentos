@@ -13,7 +13,7 @@ export default function InternationalTrades() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [filters, setFilters] = useState(getCurrentMonthYear());
-  const [currentRate, setCurrentRate] = useState('');
+  const [currentRate, setCurrentRate] = useState(0);
 
   const [form, setForm] = useState({
     trade_date: new Date().toISOString().split('T')[0],
@@ -28,9 +28,10 @@ export default function InternationalTrades() {
 
   const loadData = async () => {
     try {
-      const [tradesRes, summaryRes] = await Promise.all([
+      const [tradesRes, summaryRes, rateRes] = await Promise.all([
         api.get(`/international-trades?month=${filters.month}&year=${filters.year}`),
-        api.get(`/dashboard/summary?month=${filters.month}&year=${filters.year}`)
+        api.get(`/dashboard/summary?month=${filters.month}&year=${filters.year}`),
+        api.get('/exchange/usd')
       ]);
 
       const sortedTrades = tradesRes.data.sort((a, b) =>
@@ -39,6 +40,7 @@ export default function InternationalTrades() {
 
       setTrades(sortedTrades);
       setBrokerInitialBalance(summaryRes.data.balances.broker_international?.initial || 0);
+      setCurrentRate(rateRes.data.rate);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -49,9 +51,9 @@ export default function InternationalTrades() {
   const fetchExchangeRate = async () => {
     try {
       const res = await api.get('/exchange/usd');
-      const rate = res.data.rate.toFixed(4);
+      const rate = res.data.rate;
       setCurrentRate(rate);
-      return rate;
+      return rate.toFixed(4);
     } catch (error) {
       console.error('Erro ao buscar cotação:', error);
       return '';
@@ -136,7 +138,7 @@ export default function InternationalTrades() {
 
   const currentBalance = brokerInitialBalance + trades.reduce((sum, t) => sum + parseFloat(t.pnl_usd), 0);
   const totalPnlUsd = trades.reduce((sum, t) => sum + parseFloat(t.pnl_usd), 0);
-  const totalPnlBrl = trades.reduce((sum, t) => sum + parseFloat(t.pnl_brl), 0);
+  const totalPnlBrl = totalPnlUsd * currentRate;
   const totalPercentage = brokerInitialBalance > 0 ? (totalPnlUsd / brokerInitialBalance) * 100 : null;
 
   const months = [
@@ -214,6 +216,13 @@ export default function InternationalTrades() {
             P&L Total (BRL): <span className="text-xl">{formatCurrency(totalPnlBrl)}</span>
           </p>
         </div>
+        {currentRate > 0 && (
+          <div className="rounded-lg p-4 bg-gray-100">
+            <p className="font-medium text-gray-700">
+              Cotação Atual: <span className="text-xl">R$ {currentRate.toFixed(4)}</span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Lista */}
@@ -230,7 +239,6 @@ export default function InternationalTrades() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Saldo Antes (USD)</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">P&L (USD)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cotação</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">P&L (BRL)</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">%</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
@@ -240,7 +248,7 @@ export default function InternationalTrades() {
               {tradesForDisplay.map((trade) => {
                 const originalIndex = trades.findIndex(t => t.id === trade.id);
                 const pnlUsd = parseFloat(trade.pnl_usd);
-                const pnlBrl = parseFloat(trade.pnl_brl);
+                const pnlBrl = pnlUsd * currentRate;
                 const isPositive = pnlUsd >= 0;
                 const balanceBefore = getBalanceBeforeTrade(originalIndex);
                 const pct = calcPercentage(pnlUsd, originalIndex);
@@ -261,9 +269,6 @@ export default function InternationalTrades() {
                       style={{ color: isPositive ? GREEN : RED }}
                     >
                       {formatCurrencyUSD(pnlUsd)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-500">
-                      {parseFloat(trade.exchange_rate).toFixed(4)}
                     </td>
                     <td
                       className="px-6 py-4 text-sm text-right"

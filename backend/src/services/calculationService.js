@@ -26,7 +26,6 @@ const calculationService = {
       expensesByCategory,
       goal,
       totalPnlUsd,
-      totalPnlIntBrl,
       exchangeRate
     ] = await Promise.all([
       Balance.findByType(userId, 'bank'),
@@ -38,7 +37,6 @@ const calculationService = {
       Expense.sumByCategory(userId, month, year),
       Goal.findByUser(userId),
       InternationalTrade.sumByUserUsd(userId, month, year),
-      InternationalTrade.sumByUser(userId, month, year),
       fetchExchangeRate()
     ]);
 
@@ -52,16 +50,21 @@ const calculationService = {
     const brokerInternationalBrl = currentBrokerInternationalBalance * exchangeRate;
     const totalBalance = currentBankBalance + currentBrokerBalance + brokerInternationalBrl;
 
+    const totalPnlIntBrl = totalPnlUsd * exchangeRate;
     const combinedPnl = totalPnl + totalPnlIntBrl;
 
     let goalProgress = {
       totalBalance: { target: 0, current: totalBalance, percentage: 0 },
-      monthlyProfit: { target: 0, current: combinedPnl, percentage: 0 }
+      monthlyProfit: { target: 0, current: combinedPnl, percentage: 0 },
+      brokerBalance: { target: 0, current: currentBrokerBalance, percentage: 0 },
+      brokerInternationalBalance: { target: 0, current: brokerInternationalBrl, percentage: 0 }
     };
 
     if (goal) {
       const totalTarget = parseFloat(goal.total_balance) || 0;
       const profitTarget = parseFloat(goal.monthly_profit) || 0;
+      const brokerTarget = parseFloat(goal.broker_balance) || 0;
+      const brokerIntTarget = parseFloat(goal.broker_international_balance) || 0;
 
       goalProgress = {
         totalBalance: {
@@ -73,6 +76,16 @@ const calculationService = {
           target: profitTarget,
           current: combinedPnl,
           percentage: profitTarget > 0 ? Math.min((combinedPnl / profitTarget) * 100, 100) : 0
+        },
+        brokerBalance: {
+          target: brokerTarget,
+          current: currentBrokerBalance,
+          percentage: brokerTarget > 0 ? Math.min((currentBrokerBalance / brokerTarget) * 100, 100) : 0
+        },
+        brokerInternationalBalance: {
+          target: brokerIntTarget,
+          current: brokerInternationalBrl,
+          percentage: brokerIntTarget > 0 ? Math.min((brokerInternationalBrl / brokerIntTarget) * 100, 100) : 0
         }
       };
     }
@@ -108,3 +121,4 @@ const calculationService = {
 };
 
 module.exports = calculationService;
+module.exports.fetchExchangeRate = fetchExchangeRate;

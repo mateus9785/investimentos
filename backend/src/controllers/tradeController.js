@@ -1,5 +1,6 @@
 const Trade = require('../models/Trade');
 const InternationalTrade = require('../models/InternationalTrade');
+const { fetchExchangeRate } = require('../services/calculationService');
 
 const tradeController = {
   async index(req, res) {
@@ -104,9 +105,10 @@ const tradeController = {
         return res.status(400).json({ error: 'Mês e ano são obrigatórios' });
       }
 
-      const [domesticCalendar, internationalCalendar] = await Promise.all([
+      const [domesticCalendar, internationalCalendar, exchangeRate] = await Promise.all([
         Trade.getCalendar(req.userId, parseInt(month), parseInt(year)),
-        InternationalTrade.getCalendar(req.userId, parseInt(month), parseInt(year))
+        InternationalTrade.getCalendar(req.userId, parseInt(month), parseInt(year)),
+        fetchExchangeRate()
       ]);
 
       const merged = {};
@@ -116,7 +118,7 @@ const tradeController = {
       }
       for (const entry of internationalCalendar) {
         const key = entry.date instanceof Date ? entry.date.toISOString().split('T')[0] : String(entry.date);
-        merged[key] = (merged[key] || 0) + parseFloat(entry.total_pnl);
+        merged[key] = (merged[key] || 0) + parseFloat(entry.total_pnl) * exchangeRate;
       }
 
       const calendar = Object.entries(merged)

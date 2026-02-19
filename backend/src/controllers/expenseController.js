@@ -40,7 +40,7 @@ const expenseController = {
 
   async store(req, res) {
     try {
-      const { category_id, amount, description, expense_date } = req.body;
+      const { category_id, amount, description, expense_date, is_mandatory } = req.body;
 
       if (!category_id || amount === undefined || !expense_date) {
         return res.status(400).json({ error: 'Campos obrigatórios: category_id, amount, expense_date' });
@@ -50,7 +50,8 @@ const expenseController = {
         category_id,
         amount,
         description,
-        expense_date
+        expense_date,
+        is_mandatory: !!is_mandatory
       });
 
       const expense = await Expense.findById(id, req.userId);
@@ -63,7 +64,7 @@ const expenseController = {
 
   async update(req, res) {
     try {
-      const { category_id, amount, description, expense_date } = req.body;
+      const { category_id, amount, description, expense_date, is_mandatory } = req.body;
 
       const expense = await Expense.findById(req.params.id, req.userId);
 
@@ -75,7 +76,8 @@ const expenseController = {
         category_id: category_id ?? expense.category_id,
         amount: amount ?? expense.amount,
         description: description ?? expense.description,
-        expense_date: expense_date ?? expense.expense_date
+        expense_date: expense_date ?? expense.expense_date,
+        is_mandatory: is_mandatory !== undefined ? !!is_mandatory : !!expense.is_mandatory
       });
 
       const updatedExpense = await Expense.findById(req.params.id, req.userId);

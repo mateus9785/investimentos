@@ -15,7 +15,8 @@ export default function Expenses() {
     category_id: '',
     amount: '',
     description: '',
-    expense_date: new Date().toISOString().split('T')[0]
+    expense_date: new Date().toISOString().split('T')[0],
+    is_mandatory: false
   });
 
   useEffect(() => {
@@ -50,7 +51,8 @@ export default function Expenses() {
         category_id: expense.category_id,
         amount: expense.amount,
         description: expense.description || '',
-        expense_date: expense.expense_date.split('T')[0]
+        expense_date: expense.expense_date.split('T')[0],
+        is_mandatory: !!expense.is_mandatory
       });
     } else {
       setEditingExpense(null);
@@ -58,7 +60,8 @@ export default function Expenses() {
         category_id: categories[0]?.id || '',
         amount: '',
         description: '',
-        expense_date: new Date().toISOString().split('T')[0]
+        expense_date: new Date().toISOString().split('T')[0],
+        is_mandatory: false
       });
     }
     setModalOpen(true);
@@ -105,6 +108,8 @@ export default function Expenses() {
   };
 
   const total = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  const totalMandatory = expenses.filter(e => e.is_mandatory).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  const totalOptional = total - totalMandatory;
 
   const months = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -148,10 +153,19 @@ export default function Expenses() {
       </div>
 
       {/* Total */}
-      <div className="bg-red-100 rounded-lg p-4 mb-6">
-        <p className="text-red-800 font-medium">
-          Total de Gastos: <span className="text-xl">{formatCurrency(total)}</span>
-        </p>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="bg-red-100 rounded-lg p-4">
+          <p className="text-red-800 text-xs font-medium uppercase mb-1">Total de Gastos</p>
+          <p className="text-red-800 text-xl font-bold">{formatCurrency(total)}</p>
+        </div>
+        <div className="bg-orange-100 rounded-lg p-4">
+          <p className="text-orange-800 text-xs font-medium uppercase mb-1">Obrigatórios</p>
+          <p className="text-orange-800 text-xl font-bold">{formatCurrency(totalMandatory)}</p>
+        </div>
+        <div className="bg-green-100 rounded-lg p-4">
+          <p className="text-green-800 text-xs font-medium uppercase mb-1">Opcionais (podem ser cortados)</p>
+          <p className="text-green-800 text-xl font-bold">{formatCurrency(totalOptional)}</p>
+        </div>
       </div>
 
       {/* Lista */}
@@ -167,6 +181,7 @@ export default function Expenses() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Obrigatório</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
               </tr>
@@ -182,6 +197,12 @@ export default function Expenses() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {expense.description || '-'}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-center">
+                    {expense.is_mandatory
+                      ? <span className="inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-1 rounded-full">Obrigatório</span>
+                      : <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">Opcional</span>
+                    }
                   </td>
                   <td className="px-6 py-4 text-sm text-red-600 text-right font-medium">
                     {formatCurrency(expense.amount)}
@@ -251,7 +272,7 @@ export default function Expenses() {
             />
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-2">Data</label>
             <input
               type="date"
@@ -260,6 +281,19 @@ export default function Expenses() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               required
             />
+          </div>
+
+          <div className="mb-6">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.is_mandatory}
+                onChange={(e) => setForm({ ...form, is_mandatory: e.target.checked })}
+                className="w-4 h-4 accent-red-600"
+              />
+              <span className="text-gray-700 text-sm font-medium">Gasto obrigatório</span>
+              <span className="text-xs text-gray-400">(não pode ser cortado)</span>
+            </label>
           </div>
 
           <div className="flex justify-end gap-3">
