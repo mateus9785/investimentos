@@ -3,9 +3,8 @@ const db = require('../config/database');
 const Expense = {
   async findByUser(userId, filters = {}) {
     let query = `
-      SELECT e.*, c.name as category_name
+      SELECT e.*
       FROM expenses e
-      JOIN categories c ON e.category_id = c.id
       WHERE e.user_id = ?
     `;
     const params = [userId];
@@ -28,9 +27,8 @@ const Expense = {
 
   async findById(id, userId) {
     const [rows] = await db.query(
-      `SELECT e.*, c.name as category_name
+      `SELECT e.*
        FROM expenses e
-       JOIN categories c ON e.category_id = c.id
        WHERE e.id = ? AND e.user_id = ?`,
       [id, userId]
     );
@@ -38,19 +36,19 @@ const Expense = {
   },
 
   async create(userId, data) {
-    const { category_id, amount, description, expense_date, is_mandatory } = data;
+    const { amount, description, expense_date, is_mandatory } = data;
     const [result] = await db.query(
-      'INSERT INTO expenses (user_id, category_id, amount, description, expense_date, is_mandatory) VALUES (?, ?, ?, ?, ?, ?)',
-      [userId, category_id, amount, description, expense_date, is_mandatory ? 1 : 0]
+      'INSERT INTO expenses (user_id, amount, description, expense_date, is_mandatory) VALUES (?, ?, ?, ?, ?)',
+      [userId, amount, description, expense_date, is_mandatory ? 1 : 0]
     );
     return result.insertId;
   },
 
   async update(id, userId, data) {
-    const { category_id, amount, description, expense_date, is_mandatory } = data;
+    const { amount, description, expense_date, is_mandatory } = data;
     const [result] = await db.query(
-      'UPDATE expenses SET category_id = ?, amount = ?, description = ?, expense_date = ?, is_mandatory = ? WHERE id = ? AND user_id = ?',
-      [category_id, amount, description, expense_date, is_mandatory ? 1 : 0, id, userId]
+      'UPDATE expenses SET amount = ?, description = ?, expense_date = ?, is_mandatory = ? WHERE id = ? AND user_id = ?',
+      [amount, description, expense_date, is_mandatory ? 1 : 0, id, userId]
     );
     return result.affectedRows > 0;
   },

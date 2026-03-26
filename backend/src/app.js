@@ -13,6 +13,8 @@ const dashboardRoutes = require('./routes/dashboard');
 const diaryRoutes = require('./routes/diary');
 const internationalTradeRoutes = require('./routes/internationalTrades');
 const exchangeRoutes = require('./routes/exchange');
+const milestoneRoutes = require('./routes/milestones');
+const binanceRoutes = require('./routes/binance');
 
 const app = express();
 
@@ -33,6 +35,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/diary', diaryRoutes);
 app.use('/api/international-trades', internationalTradeRoutes);
 app.use('/api/exchange', exchangeRoutes);
+app.use('/api/milestones', milestoneRoutes);
+app.use('/api/binance', binanceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -82,18 +82,6 @@ const InternationalTrade = {
     return rows;
   },
 
-  async getDailyAverage(userId, month, year) {
-    const [rows] = await db.query(
-      `SELECT
-         COALESCE(SUM(pnl_usd), 0) as total,
-         COUNT(DISTINCT DATE(trade_date)) as days_traded
-       FROM international_trades
-       WHERE user_id = ? AND MONTH(trade_date) = ? AND YEAR(trade_date) = ?`,
-      [userId, month, year]
-    );
-    const { total, days_traded } = rows[0];
-    return days_traded > 0 ? parseFloat(total) / days_traded : 0;
-  }
 };
 
 module.exports = InternationalTrade;

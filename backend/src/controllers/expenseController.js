@@ -40,14 +40,14 @@ const expenseController = {
 
   async store(req, res) {
     try {
-      const { category_id, amount, description, expense_date, is_mandatory } = req.body;
+      const { amount, description, expense_date, is_mandatory } = req.body;
 
-      if (!category_id || amount === undefined || !expense_date) {
-        return res.status(400).json({ error: 'Campos obrigatórios: category_id, amount, expense_date' });
+      if (amount === undefined || !expense_date) {
+        return res.status(400).json({ error: 'Campos obrigatórios: amount, expense_date' });
       }
 
       const id = await Expense.create(req.userId, {
-        category_id,
+        category_id: null,
         amount,
         description,
         expense_date,
@@ -64,7 +64,7 @@ const expenseController = {
 
   async update(req, res) {
     try {
-      const { category_id, amount, description, expense_date, is_mandatory } = req.body;
+      const { amount, description, expense_date, is_mandatory } = req.body;
 
       const expense = await Expense.findById(req.params.id, req.userId);
 
@@ -73,7 +73,7 @@ const expenseController = {
       }
 
       await Expense.update(req.params.id, req.userId, {
-        category_id: category_id ?? expense.category_id,
+        category_id: null,
         amount: amount ?? expense.amount,
         description: description ?? expense.description,
         expense_date: expense_date ?? expense.expense_date,
