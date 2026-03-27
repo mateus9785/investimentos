@@ -1,0 +1,39 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+echo "=== [1/6] Atualizando pacotes ==="
+pkg update -y && pkg upgrade -y
+
+echo "=== [2/6] Instalando Node.js e MariaDB ==="
+pkg install -y nodejs mariadb
+
+echo "=== [3/6] Inicializando MariaDB ==="
+mysql_install_db
+
+echo "Iniciando MariaDB..."
+mysqld_safe --datadir="$PREFIX/var/lib/mysql" &
+sleep 5
+
+echo "=== [4/6] Criando banco de dados ==="
+mysql -u root <<'SQL'
+CREATE DATABASE IF NOT EXISTS investimentos;
+CREATE USER IF NOT EXISTS 'investimentos'@'localhost' IDENTIFIED BY '171010231';
+GRANT ALL PRIVILEGES ON investimentos.* TO 'investimentos'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+
+echo "=== [5/6] Executando migrations ==="
+mysql -u investimentos -p171010231 investimentos < "$SCRIPT_DIR/backend/database/migrations/001_initial_schema.sql"
+mysql -u investimentos -p171010231 investimentos < "$SCRIPT_DIR/backend/database/migrations/002_international_trades.sql"
+
+echo "=== [6/6] Instalando dependências e buildando frontend ==="
+cd "$SCRIPT_DIR/backend" && npm install
+cd "$SCRIPT_DIR/frontend" && npm install && npm run build
+
+echo ""
+echo "Setup concluido com sucesso!"
+echo "Para iniciar o sistema, rode:"
+echo "  bash termux/start.sh"
+echo "Depois abra no navegador: http://localhost:3001"
