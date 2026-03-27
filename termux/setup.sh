@@ -23,9 +23,10 @@ mysqladmin -u root status > /dev/null 2>&1 || {
   sleep 5
 }
 
-echo "=== [4/6] Criando banco de dados ==="
+echo "=== [4/6] Recriando banco de dados do zero ==="
 mysql -u root <<'SQL'
-CREATE DATABASE IF NOT EXISTS investimentos;
+DROP DATABASE IF EXISTS investimentos;
+CREATE DATABASE investimentos;
 CREATE USER IF NOT EXISTS 'investimentos'@'localhost' IDENTIFIED BY '171010231';
 GRANT ALL PRIVILEGES ON investimentos.* TO 'investimentos'@'localhost';
 FLUSH PRIVILEGES;
