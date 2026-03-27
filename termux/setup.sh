@@ -25,8 +25,10 @@ FLUSH PRIVILEGES;
 SQL
 
 echo "=== [5/6] Executando migrations ==="
-mysql -u investimentos -p171010231 investimentos < "$SCRIPT_DIR/backend/database/migrations/001_initial_schema.sql"
-mysql -u investimentos -p171010231 investimentos < "$SCRIPT_DIR/backend/database/migrations/002_international_trades.sql"
+for migration in "$SCRIPT_DIR"/backend/database/migrations/*.sql; do
+  echo "  Aplicando: $(basename "$migration")"
+  mysql -u investimentos -p171010231 investimentos < "$migration"
+done
 
 echo "=== [6/6] Instalando dependências e buildando frontend ==="
 cd "$SCRIPT_DIR/backend" && npm install
