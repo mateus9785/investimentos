@@ -16,10 +16,13 @@ const exchangeRoutes = require('./routes/exchange');
 const milestoneRoutes = require('./routes/milestones');
 const binanceRoutes = require('./routes/binance');
 
+const authMiddleware = require('./middlewares/authMiddleware');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(authMiddleware);
 
 // Servir arquivos de upload
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

@@ -116,6 +116,8 @@ export default function Dashboard() {
   // binance
   const [binanceBalance, setBinanceBalance] = useState(null);
   const [currentRate, setCurrentRate] = useState(0);
+  const [btcPrice, setBtcPrice] = useState(null);
+  const [openPositions, setOpenPositions] = useState([]);
 
   // fullscreen saldo
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -141,13 +143,23 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
 
-    const interval = setInterval(async () => {
+    const fetchLive = async () => {
+      try {
+        const res = await api.get('/binance/live');
+        setBtcPrice(res.data.btcPrice);
+        setOpenPositions(res.data.positions);
+        if (res.data.positions.length > 0) {
+          // recalcula o saldo total da binance somando o balance base + unrealized PNL
+        }
+      } catch { /* silencioso */ }
       try {
         const res = await api.get('/binance/balance');
         setBinanceBalance(res.data.balanceUSD);
       } catch { /* silencioso */ }
-    }, 5_000);
+    };
 
+    fetchLive();
+    const interval = setInterval(fetchLive, 1_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -511,14 +523,38 @@ export default function Dashboard() {
     <>
     {fullscreenBalance && (
       <div
-        className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center select-none"
+        className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center select-none px-6"
         style={!isMobile ? { cursor: 'pointer' } : undefined}
-        onClick={!isMobile ? () => setFullscreenBalance(false) : undefined}
+        onClick={!isMobile ? (e) => { if (e.target === e.currentTarget) setFullscreenBalance(false); } : undefined}
       >
+        {/* Saldo total */}
         <p className="font-bold text-white" style={{ fontSize: 'clamp(3rem, 12vw, 9rem)', lineHeight: 1.1 }}>
           {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalBalance)}
         </p>
-        {!isMobile && <p className="text-gray-600 text-sm mt-10">clique para fechar</p>}
+
+        {/* Dólar + Bitcoin price + PNL */}
+        {btcPrice !== null && (
+          <div className="mt-8 flex items-center gap-10">
+            {currentRate > 0 && (
+              <span className="text-gray-300 font-mono font-semibold" style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2.6rem)' }}>
+                <span className="text-gray-500">USD</span> {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(currentRate)}
+              </span>
+            )}
+            <span className="text-white font-mono font-semibold" style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2.6rem)' }}>
+              <span className="text-yellow-400">₿</span> {new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(btcPrice)}
+            </span>
+            {openPositions.length > 0 && (() => {
+              const totalPnl = openPositions.reduce((sum, p) => sum + p.unrealizedProfit, 0);
+              return (
+                <span className="font-mono font-bold" style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2.6rem)', color: totalPnl >= 0 ? GREEN : RED }}>
+                  {totalPnl >= 0 ? '+' : ''}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPnl)}
+                </span>
+              );
+            })()}
+          </div>
+        )}
+
+        {!isMobile && <p className="text-gray-700 text-sm mt-10">clique fora para fechar</p>}
       </div>
     )}
     <div className="flex flex-col min-h-screen bg-gray-950 p-4 md:p-8">

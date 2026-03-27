@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const tradeController = require('../controllers/tradeController');
-const authMiddleware = require('../middlewares/authMiddleware');
 
-router.use(authMiddleware);
 
 router.get('/', tradeController.index);
 router.get('/calendar/:year/:month', tradeController.calendar);

@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middlewares/authMiddleware');
-const { getBinanceBalance } = require('../services/binanceService');
-
-router.use(authMiddleware);
+const { getBinanceBalance, getBtcPrice, getOpenPositions } = require('../services/binanceService');
 
 router.get('/balance', async (req, res) => {
   try {
@@ -12,6 +9,19 @@ router.get('/balance', async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar saldo Binance:', error.message);
     return res.status(500).json({ error: 'Erro ao buscar saldo na Binance' });
+  }
+});
+
+router.get('/live', async (req, res) => {
+  try {
+    const [btcPrice, positions] = await Promise.all([
+      getBtcPrice(),
+      getOpenPositions(),
+    ]);
+    return res.json({ btcPrice, positions });
+  } catch (error) {
+    console.error('Erro ao buscar dados live Binance:', error.message);
+    return res.status(500).json({ error: 'Erro ao buscar dados live' });
   }
 });
 
