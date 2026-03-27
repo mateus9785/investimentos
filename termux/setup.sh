@@ -10,11 +10,18 @@ echo "=== [2/6] Instalando Node.js e MariaDB ==="
 pkg install -y nodejs mariadb
 
 echo "=== [3/6] Inicializando MariaDB ==="
-mysql_install_db
+if [ ! -d "$PREFIX/var/lib/mysql/mysql" ]; then
+  mysql_install_db
+else
+  echo "  MariaDB ja inicializado, pulando."
+fi
 
-echo "Iniciando MariaDB..."
-mysqld_safe --datadir="$PREFIX/var/lib/mysql" &
-sleep 5
+echo "Verificando MariaDB..."
+mysqladmin -u root status > /dev/null 2>&1 || {
+  echo "Iniciando MariaDB..."
+  mysqld_safe --datadir="$PREFIX/var/lib/mysql" &
+  sleep 5
+}
 
 echo "=== [4/6] Criando banco de dados ==="
 mysql -u root <<'SQL'

@@ -18,14 +18,14 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 -- Inserir categorias padrão
-INSERT INTO categories (name) VALUES
-  ('Alimentação'),
-  ('Transporte'),
-  ('Lazer'),
-  ('Moradia'),
-  ('Serviços'),
-  ('Assinaturas'),
-  ('Outros');
+INSERT IGNORE INTO categories (id, name) VALUES
+  (1, 'Alimentação'),
+  (2, 'Transporte'),
+  (3, 'Lazer'),
+  (4, 'Moradia'),
+  (5, 'Serviços'),
+  (6, 'Assinaturas'),
+  (7, 'Outros');
 
 -- Tabela de saldos (banco/corretora)
 CREATE TABLE IF NOT EXISTS balances (
@@ -77,5 +77,5 @@ CREATE TABLE IF NOT EXISTS goals (
 );
 
 -- Criar usuário de teste (senha: 123456)
-INSERT INTO users (username, password_hash) VALUES
+INSERT IGNORE INTO users (username, password_hash) VALUES
   ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
