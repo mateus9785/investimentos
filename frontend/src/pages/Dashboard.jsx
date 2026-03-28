@@ -122,6 +122,7 @@ export default function Dashboard() {
   // fullscreen saldo
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const [fullscreenBalance, setFullscreenBalance] = useState(isMobile);
+  const [fullscreenUSD, setFullscreenUSD] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const { month, year } = getCurrentMonthYear();
@@ -525,11 +526,15 @@ export default function Dashboard() {
       <div
         className="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center select-none px-6"
         style={!isMobile ? { cursor: 'pointer' } : undefined}
-        onClick={!isMobile ? (e) => { if (e.target === e.currentTarget) setFullscreenBalance(false); } : undefined}
+        onClick={isMobile
+          ? () => setFullscreenUSD(v => !v)
+          : (e) => { if (e.target === e.currentTarget) setFullscreenBalance(false); }}
       >
         {/* Saldo total */}
         <p className="font-bold text-white" style={{ fontSize: 'clamp(3rem, 12vw, 9rem)', lineHeight: 1.1 }}>
-          {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalBalance)}
+          {fullscreenUSD && currentRate > 0
+            ? new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalBalance / currentRate)
+            : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalBalance)}
         </p>
 
         {/* Dólar + Bitcoin price + PNL */}
@@ -545,9 +550,12 @@ export default function Dashboard() {
             </span>
             {openPositions.length > 0 && (() => {
               const totalPnl = openPositions.reduce((sum, p) => sum + p.unrealizedProfit, 0);
+              const totalPnlBRL = totalPnl * currentRate;
               return (
                 <span className="font-mono font-bold" style={{ fontSize: 'clamp(1.4rem, 3.5vw, 2.6rem)', color: totalPnl >= 0 ? GREEN : RED }}>
-                  {totalPnl >= 0 ? '+' : ''}{new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPnl)}
+                  {fullscreenUSD
+                    ? `${totalPnl >= 0 ? '+' : ''}${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPnl)}`
+                    : `${totalPnlBRL >= 0 ? '+' : ''}${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPnlBRL)}`}
                 </span>
               );
             })()}
